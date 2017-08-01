@@ -93,7 +93,7 @@ function get_encoding($text){
 
 
 if (checkPW()) {
-	$act = isset($_GET['act']) ? $_GET['act'] : '';
+
 	$path = isset($_GET['path']) ? $_GET['path'] : FMROOT;
 	$os_path = osfromweb ($path);
 	$getfiletype = isset($_GET['filetype']) ? $_GET['filetype'] : 'dir';
@@ -117,6 +117,9 @@ if (checkPW()) {
 	if ($filecontent != '') {
 		file_put_contents($os_path, $filecontent);
 	}
+	
+	$act = isset($_GET['act']) ? $_GET['act'] : '';
+	$filename = isset($_GET['filename']) ? $_GET['filename'] : '';
 	if ($act == 'download') {
 		$path_array = explode('/', $path);
 		$filename = end($path_array);
@@ -221,7 +224,7 @@ if (isset($_GET['del']) && $_GET['del'] ==$i) {
 			} else {
 				$filepath = $filepath . '&filetype=file';
 				$imgtype = '&#x1f4c4;';
-				$file_download = "<a href=\"?act=download&path=$filepath\">Download</a>";
+				$file_download = "<a href=\"?act=download&path=$filepath&filename=$filename\">Download</a>";
 			}
 			echo "<tr class=\"$filetype\"><td class=\"imgtype\">$imgtype</td><td class=\"filename\"><a href=\"?path=$filepath\">$filename</a></td><td class=\"filemtime\">$filesize</td><td class=\"filemtime\">$filemtime</td><td class=\"filename\">$file_download</td></tr>\r\n";
 		}
