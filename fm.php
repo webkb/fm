@@ -51,14 +51,6 @@ function osfromweb ($string) {
 	}
 	return $string;
 }
-function percentosfromweb ($string) {
-	$percent = array (
-		'#' => '%23',
-		'&' => '%26',
-		'+' => '%2b',
-	);
-	return strtr($string, $percent);
-}
 function ostoweb ($string) {
 	global $os_charset;
 	global $web_charset;
@@ -66,6 +58,14 @@ function ostoweb ($string) {
 		$string = mb_convert_encoding($string, $web_charset , $os_charset);
 	}
 	return $string;
+}
+function percentosfromweb ($string) {
+	$percent = array (
+		'#' => '%23',
+		'&' => '%26',
+		'+' => '%2b',
+	);
+	return strtr($string, $percent);
 }
 function osfiletoweb ($string, $fromcharset) {
 	global $web_charset;
@@ -90,7 +90,10 @@ function get_encoding($text){
     elseif ($first2 == UTF16_LITTLE_ENDIAN_BOM) return 'UTF-16LE';
     else return false;
 }
-
+function mb_basename($path) {
+	$path_array = explode('/', $path);
+	return end($path_array);
+}
 
 if (checkPW()) {
 
@@ -121,14 +124,16 @@ if (checkPW()) {
 	$act = isset($_GET['act']) ? $_GET['act'] : '';
 	$filename = isset($_GET['filename']) ? $_GET['filename'] : '';
 	if ($act == 'download') {
-		$path_array = explode('/', $path);
-		$filename = end($path_array);
 		header('Content-Type: ' . mime_content_type($os_path));
 		header('Content-Length: '. filesize($os_path));
-		header('Content-Disposition: attachment; filename=' . $filename );
-		ob_flush();
+		header('Content-Disposition: attachment; filename=' . mb_basename($path));
 		readfile($os_path);
 		exit;
+	}
+	$rename = isset($_POST['rename']) ? $_POST['rename'] : '';
+	if ($act == 'rename' && $rename) {
+		$rename = osfromweb(str_replace(mb_basename($path), $rename, $path));
+		rename($os_path, $rename);
 	}
 }
 	
@@ -175,7 +180,7 @@ body {
 	width:400px;
 }
 .filelist .filemtime{
-	width:200px;
+	width:150px;
 }
 </style>
 </head>
@@ -183,15 +188,16 @@ body {
 <a href="?path=<?php echo preg_replace('/\/$/', '', str_replace('\\', '/', dirname($path))) . '/'; ?>">Parent</a>
 <?php if ($getfiletype == 'dir'): ?>
 <form method="post" enctype="multipart/form-data">
-	<input name="os_charset" placeholder="charset" value="<?php echo $os_charset; ?>" /><br />
-	The defalut OS File system charset is utf-8, if your php run in Windows OS, you maybe need set Windows OS local file system charset.<br />
-	The Php File Manager guess from your browser accept language(<?php echo $osweblanguage; ?>), if not right, please write the current charset.<br />
+	<input name="os_charset" placeholder="charset" value="<?php echo $os_charset; ?>" /> <span title="The defalut OS File system charset is utf-8,
+if your php run in Windows OS, you maybe need set Windows OS local file system charset.
+The Php File Manager guess from your browser accept language(<?php echo $osweblanguage; ?>),
+if not right, please write the current charset."> ? </span><br />
 	<input name="mkdir" placeholder="mkdir" /><br />
 	<input name="file" type="file" /><br />
 	<input type="submit" />
 </form>
 	<table class="filelist">
-		<tr class=""><th class="imgtype"></th><th class="filename">Name</th><th class="filemtime">Size</th><th class="filemtime">Time</th><th class="filemtime">Download</th></tr>
+		<tr class=""><th class="imgtype"></th><th class="filename">Name</th><th class="filemtime">Size</th><th class="filemtime">Time</th><th class="filemtime">Download</th><th class="filemtime">Rename</th></tr>
 <?php
 if (is_dir($os_path)) {
 	if ($dh = opendir($os_path)) {
@@ -217,16 +223,18 @@ if (isset($_GET['del']) && $_GET['del'] ==$i) {
 			$filename = ostoweb ($filename);
 			$filepath = percentosfromweb($path . $filename);
 			if ($filetype =='dir') {
-				$filepath = $filepath . '/';
+				$filepath = $filepath;
+				$filepathtype = '/&filetype=dir';
 				$imgtype = '&#x1f4c1;';
 				$file_download = ' --- ';
 				$filesize = ' --- ';
 			} else {
-				$filepath = $filepath . '&filetype=file';
+				$filepath = $filepath;
+				$filepathtype = '&filetype=file';
 				$imgtype = '&#x1f4c4;';
 				$file_download = "<a href=\"?act=download&path=$filepath&filename=$filename\">Download</a>";
 			}
-			echo "<tr class=\"$filetype\"><td class=\"imgtype\">$imgtype</td><td class=\"filename\"><a href=\"?path=$filepath\">$filename</a></td><td class=\"filemtime\">$filesize</td><td class=\"filemtime\">$filemtime</td><td class=\"filename\">$file_download</td></tr>\r\n";
+			echo "<tr class=\"$filetype\"><td class=\"imgtype\">$imgtype</td><td class=\"filename\"><a href=\"?path=$filepath$filepathtype\">$filename</a></td><td class=\"filemtime\">$filesize</td><td class=\"filemtime\">$filemtime</td><td class=\"filemtime\">$file_download</td><td class=\"filemtime\"><a href=\"?act=rename&path=$filepath&filename=$filename\">Rename</a></td></tr>\r\n";
 		}
 		closedir($dh);
 	}
@@ -253,6 +261,17 @@ if (isset($_GET['del']) && $_GET['del'] ==$i) {
 </form>
 <form method="post" enctype="multipart/form-data">
 	<textarea name="filecontent" style="width:100%;height:300px;"><?php echo htmlentities($filecontent); ?></textarea><br />
+	<input type="submit" />
+</form>
+<?php endif; ?>
+<?php if ($act == 'rename'): ?>
+<?php
+
+	$rename =  mb_basename($path);
+?>
+<form method="post" enctype="multipart/form-data">
+	<input name="rename" placeholder="charset" value="" /><br />
+	the old filename: <?php echo $rename; ?>
 	<input type="submit" />
 </form>
 <?php endif; ?>
