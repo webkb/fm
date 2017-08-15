@@ -34,6 +34,12 @@ function ge_htmlspecialchars($string) {
 	global $default_encoding;
 	return htmlspecialchars ($string, ENT_COMPAT, $default_encoding);
 }
+function stripper($string) { 
+    if (get_magic_quotes_gpc()){ 
+        $string = stripslashes($string); 
+    } 
+    return $string; 
+} 
 function percentosfromweb ($string) {
 	$percent = array (
 		'#' => '%23',
@@ -87,9 +93,10 @@ if (checkPW()) {
 		$default_encoding = $_SESSION['default_encoding'];
 	}
 	$file_encoding = isset($_GET['file_encoding']) ? $_GET['file_encoding'] : $default_encoding;
+	header('Content-Type:text/html; charset=' . $default_encoding);
 	$file_content = isset($_POST['file_content']) ? $_POST['file_content'] : '';
 	if ($file_content != '') {
-		$file_encoding = isset($_POST['file_encoding']) ? $_POST['file_encoding'] : $file_encoding;
+		$file_content = stripper($file_content);
 		$file_content = file_from_default($file_content);
 		file_put_contents($path, $file_content);
 	}
@@ -170,7 +177,7 @@ body {
 			<th class="filemtime">Time</th>
 			<th class="fileact">Download</th>
 			<th class="fileact">Rename</th>
-			<th class="fileact">Delete</th>
+			<th class="filemtime">Delete</th>
 		</tr>
 <?php
 if (is_dir($path)) {
@@ -210,7 +217,7 @@ if (is_dir($path)) {
 			<td class=\"filemtime\">$filesize</td><td class=\"filemtime\">$filemtime</td>
 			<td class=\"fileact\">$file_download</td>
 			<td class=\"fileact\"><a href=\"?act=rename&path=$filepath&filename=$filename\">Rename</a></td>
-			<td class=\"fileact\"><a href=\"?path=$path&delete=$filename\">delete</a> $delete</td>
+			<td class=\"filemtime\"><a href=\"?path=$path&delete=$filename\">Delete</a> $delete</td>
 			</tr>\r\n";
 		}
 		closedir($dh);
@@ -229,8 +236,7 @@ if (is_dir($path)) {
 <a href="<?php echo $_SERVER['REQUEST_URI']; ?>&file_encoding=GB2312">GB2312</a>
 <a href="<?php echo $_SERVER['REQUEST_URI']; ?>&file_encoding=UTF-8">UTF-8</a>
 <form method="post">
-	<input name="file_encoding" value="<?php echo $file_encoding; ?>" />
-	<textarea name="file_content" style="width:100%;height:300px;"><?php echo $file_content; ?></textarea><br />
+	<textarea name="file_content" style="width:100%;height:550px;"><?php echo $file_content; ?></textarea><br />
 	<input type="submit" />
 </form>
 <?php endif; ?>
