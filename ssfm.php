@@ -14,24 +14,12 @@ define('FMROOT', dirname($_SERVER['SCRIPT_FILENAME']));
 
 session_start();
 
-function file_from_default ($string) {
-	global $file_encoding;
-	global $default_encoding;
-	if ($file_encoding != $default_encoding) {
-		$string = mb_convert_encoding($string, $file_encoding , $default_encoding);
-	}
-	return $string;
-}
-function file_to_default ($string) {
-	global $file_encoding;
-	global $default_encoding;
-	if ($file_encoding != $default_encoding) {
-		$string = mb_convert_encoding($string, $default_encoding , $file_encoding);
-	}
-	return $string;
-}
 function ge_htmlspecialchars($string) {
-	global $default_encoding;
+	if (isset($_GET['default_encoding'])) {
+		$default_encoding = $_SESSION['default_encoding'] = $_GET['default_encoding'];
+	} elseif (isset($_SESSION['default_encoding'])) {
+		$default_encoding = $_SESSION['default_encoding'];
+	}
 	return htmlspecialchars ($string, ENT_COMPAT, $default_encoding);
 }
 function percentosfromweb ($string) {
@@ -81,16 +69,8 @@ if (checkPW()) {
 		move_uploaded_file($file['tmp_name'], $path . DIRECTORY_SEPARATOR . $file['name']);
 	}
 
-	if (isset($_GET['default_encoding'])) {
-		$default_encoding = $_SESSION['default_encoding'] = $_GET['default_encoding'];
-	} elseif (isset($_SESSION['default_encoding'])) {
-		$default_encoding = $_SESSION['default_encoding'];
-	}
-	$file_encoding = isset($_GET['file_encoding']) ? $_GET['file_encoding'] : $default_encoding;
 	$file_content = isset($_POST['file_content']) ? $_POST['file_content'] : '';
 	if ($file_content != '') {
-		$file_encoding = isset($_POST['file_encoding']) ? $_POST['file_encoding'] : $file_encoding;
-		$file_content = file_from_default($file_content);
 		file_put_contents($path, $file_content);
 	}
 
@@ -222,14 +202,10 @@ if (is_dir($path)) {
 <?php if ($act == 'file'): ?>
 <?php
 	$file_content = file_get_contents($path);
-	$file_content = file_to_default($file_content);
 	$file_content = ge_htmlspecialchars($file_content);
 
 ?>
-<a href="<?php echo $_SERVER['REQUEST_URI']; ?>&file_encoding=GB2312">GB2312</a>
-<a href="<?php echo $_SERVER['REQUEST_URI']; ?>&file_encoding=UTF-8">UTF-8</a>
 <form method="post">
-	<input name="file_encoding" value="<?php echo $file_encoding; ?>" />
 	<textarea name="file_content" style="width:100%;height:300px;"><?php echo $file_content; ?></textarea><br />
 	<input type="submit" />
 </form>

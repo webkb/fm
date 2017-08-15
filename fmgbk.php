@@ -6,7 +6,7 @@
 $is_otherdir_forbidden = false;
 session_start();
 define('ROOT', webroot ());
-define('FMROOT', strtolower(dirname($_SERVER['SCRIPT_FILENAME'])) . DIRECTORY_SEPARATOR);
+define('FMROOT', strtolower(dirname($_SERVER['SCRIPT_FILENAME'])));
 function webroot () {
 	return $_SERVER['DOCUMENT_ROOT'] || $_SERVER['CONTEXT_DOCUMENT_ROOT'];
 }
@@ -130,7 +130,7 @@ body {
 </style>
 </head>
 <body>
-<a href="?path=<?php echo preg_replace('/\/$/', '', str_replace('\\', '/', dirname($path))) . '/'; ?>">Parent</a>
+<a href="?path=<?php $dir = preg_replace('/\\\\$/', '', dirname($path)); echo $dir; ?>">Parent</a>
 <?php if ($getfiletype == 'dir'): ?>
 <form method="post" enctype="multipart/form-data">
 	<input name="mkdir" placeholder="mkdir" /><br />
@@ -144,28 +144,28 @@ if (is_dir($os_path)) {
 	if ($dh = opendir($os_path)) {
 		$i=0;
 		while (($filename = readdir($dh)) !== false) {
-			if ($filename =='.' || $filename =='..' || ! file_exists($os_path . $filename)) {
+			if ($filename =='.' || $filename =='..' || ! file_exists($os_path . DIRECTORY_SEPARATOR . $filename)) {
 				continue;
 			}
 			$i++;
-			$os_filepath = $os_path . $filename;
+			$os_filepath = $os_path . DIRECTORY_SEPARATOR . $filename;
 			$filetype = filetype($os_filepath);
 			$filemtime = date('Y-m-d H:i:s', filemtime($os_filepath));
 			$filesize = filesize($os_filepath);
 			$is_writeable = is_writeable($os_filepath);
-$del =  '';
-if (isset($_GET['del']) && $_GET['del'] ==$i) {
+$delete =  '';
+if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 	if (unlink($os_filepath)) {
-		$del =  'del success';
+		$delete =  'del success';
 	} else {
-		$del =  'del false';
+		$delete =  'del false';
 	}
 }
 			$filename = $filename;
-			$filepath = percentosfromweb($path . $filename);
+			$filepath = percentosfromweb($path . DIRECTORY_SEPARATOR . $filename);
 			if ($filetype =='dir') {
 				$filepath = $filepath;
-				$filepathtype = '/&filetype=dir';
+				$filepathtype = '&filetype=dir';
 				$imgtype = '&#x1f4c1;';
 				$file_download = ' --- ';
 				$filesize = ' --- ';
@@ -175,7 +175,13 @@ if (isset($_GET['del']) && $_GET['del'] ==$i) {
 				$imgtype = '&#x1f4c4;';
 				$file_download = "<a href=\"?act=download&path=$filepath&filename=$filename\">Download</a>";
 			}
-			echo "<tr class=\"$filetype\"><td class=\"imgtype\">$imgtype</td><td class=\"filename\"><a href=\"?path=$filepath$filepathtype\">$filename</a></td><td class=\"filemtime\">$filesize</td><td class=\"filemtime\">$filemtime</td><td class=\"filemtime\">$file_download</td><td class=\"filemtime\"><a href=\"?act=rename&path=$filepath&filename=$filename\">Rename</a></td></tr>\r\n";
+			echo "<tr class=\"$filetype\">
+			<td class=\"imgtype\">$imgtype</td>
+			<td class=\"filename\"><a href=\"?path=$filepath$filepathtype\">$filename</a></td>
+			<td class=\"filemtime\">$filesize</td><td class=\"filemtime\">$filemtime</td>
+			<td class=\"filemtime\">$file_download</td><td class=\"filemtime\"><a href=\"?act=rename&path=$filepath&filename=$filename\">Rename</a></td>
+			<td class=\"filemtime\"><a href=\"?path=$path&delete=$filename\">delete $delete</a></td>
+			</tr>\r\n";
 		}
 		closedir($dh);
 	}
