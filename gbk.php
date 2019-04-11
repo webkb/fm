@@ -25,7 +25,7 @@ function url_percent ($string) {
 	return strtr($string, $percent);
 }
 //下函数为编码文档中的HTML标记以及双引号
-//原本函数不支持GBK，GB2312又支持不全，如“镕”字
+//原函数不支持GBK，GB2312又支持不全，如“镕”字
 function ge_htmlspecialchars ($string) {
 	$percent = array (
 		'<' => '&lt;',
@@ -35,6 +35,7 @@ function ge_htmlspecialchars ($string) {
 	);
 	return strtr($string, $percent);
 }
+//原函数在多字节字符集会有BUG
 function ge_basename ($path) {
 	$path_array = explode('/', $path);
 	return end($path_array);
@@ -67,7 +68,7 @@ if (checkPW()) {
 	if ($act == 'download') {
 		header('Content-Type: ' . mime_content_type($path));
 		header('Content-Length: '. filesize($path));
-		header('Content-Disposition: attachment; filename=' . basename($path));
+		header('Content-Disposition: attachment; filename=' . ge_basename($path));
 		readfile($path);
 		exit;
 	}
