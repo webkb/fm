@@ -25,7 +25,7 @@ function url_percent ($string) {
 	return strtr($string, $percent);
 }
 //下函数为编码文档中的HTML标记以及双引号
-//本脚本本应为GBK，但函数不支持，可以为GB2312，但字符集支持不全，如“镕”字
+//原本函数不支持GBK，GB2312又支持不全，如“镕”字
 function ge_htmlspecialchars ($string) {
 	$percent = array (
 		'<' => '&lt;',
