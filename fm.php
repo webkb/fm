@@ -197,7 +197,7 @@ body {
 </head>
 <body>
 <a href="?path=<?php echo url_percent(dirname($path)); ?>">Parent</a>
-<a<?php if ($os_encoding=='GB2312'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('os_encoding', 'GB2312'); ?>">GB2312</a>
+<a<?php if ($os_encoding=='GBK'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('os_encoding', 'GBK'); ?>">GB2312</a>
 <a<?php if ($os_encoding=='UTF-8'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('os_encoding', 'UTF-8'); ?>">UTF-8</a>
 <form method="post" enctype="multipart/form-data">
 	<input name="mkdir" placeholder="mkdir" /><br />
@@ -297,7 +297,7 @@ body {
 </head>
 <body>
 <a href="?path=<?php echo url_percent(dirname($path)); ?>">Parent</a>
-<a<?php if ($file_encoding=='GB2312'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('file_encoding', 'GB2312'); ?>">GB2312</a>
+<a<?php if ($file_encoding=='GBK'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('file_encoding', 'GBK'); ?>">GB2312</a>
 <a<?php if ($file_encoding=='UTF-8'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('file_encoding', 'UTF-8'); ?>">UTF-8</a>
 <form method="post">
 	<textarea name="filecontent" style="width:100%;height:400px;"><?php echo $filecontent; ?></textarea><br />
