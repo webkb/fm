@@ -77,6 +77,10 @@ if (checkPW()) {
 		$repath = dirname($path) . '/' . $rename;
 		rename($path, $repath);
 	}
+	if ($act == 'do_nothing') {
+		echo 'php error <a href="javascript:history.back();">Back</a>';
+		exit;
+	}
 }
 header("Content-type: text/html; charset=GB2312");
 ?>
@@ -152,14 +156,14 @@ body {
 	while (($filename = readdir($dh)) !== false) {
 		$filepath = $path . '/' . $filename;
 
-		if ($filename =='.' || $filename =='..' || ! file_exists($filepath)) {
+		if ($filename =='.' || $filename =='..') {
 			continue;
 		}
+		if (file_exists($filepath)) {
 
 		$filetype = filetype($filepath);
 		$filesize = filesize($filepath);
 		$filemtime = date('Y-m-d H:i:s', filemtime($filepath));
-		$is_writeable = is_writeable($filepath);
 
 $delete =  '';
 if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
@@ -179,17 +183,30 @@ if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 		$url_path = url_percent($path);	
 		$url_filepath = url_percent($filepath);
 		$url_filename = url_percent($filename);
-		if ($filetype =='dir') {
+		} else {
+			$filetype = 'php_error';
+		}
+		if ($filetype == 'dir') {
 			$file_act = 'opendir';
 			$file_img = '&#x1f4c1;';
 			$filesize = ' --- ';
 			$file_download = ' --- ';
 			$file_delete = "<a href=\"?path=$url_path&rmdir=$url_filename\">Delete$delete</a>";
-		} else {
+		} elseif ($filetype == 'file') {
 			$file_act = 'openfile';
 			$file_img = '&#x1f4c4;';
 			$file_download = "<a href=\"?path=$url_filepath&act=download\">Download</a>";
 			$file_delete = "<a href=\"?path=$url_path&delete=$url_filename\">Delete$delete</a>";
+		} elseif ($filetype == 'php_error')  {
+			$file_act = 'do_nothing';
+			$file_img = '&#x1f4d2;';
+			$filesize = ' --- ';
+			$filemtime = ' --- ';
+			$file_download = " --- ";
+			$file_delete = " --- ";
+		$url_path = url_percent($path);	
+		$url_filepath = url_percent($filepath);
+		$url_filename = url_percent($filename);
 		}
 		echo "<tr class=\"$filetype\">
 		<td class=\"fileimg\">$file_img</td>
