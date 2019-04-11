@@ -25,13 +25,13 @@ function url_percent ($string) {
 	return strtr($string, $percent);
 }
 function ge_htmlspecialchars ($string) {
-	$percent = array (
+	$htmlchar = array (
 		'<' => '&lt;',
 		'>' => '&gt;',
 		'&' => '&amp;',
 		'"' => '&quot;',
 	);
-	return strtr($string, $percent);
+	return strtr($string, $htmlchar);
 }
 function ge_basename ($path) {
 	$path_array = explode('/', $path);
@@ -225,7 +225,6 @@ body {
 		$filetype = filetype($filepath);
 		$filesize = filesize($filepath);
 		$filemtime = date('Y-m-d H:i:s', filemtime($filepath));
-		$is_writeable = is_writeable($filepath);
 
 $delete =  '';
 if (isset($_GET['delete']) && put_os($_GET['delete']) == $filename) {
@@ -278,7 +277,7 @@ The dir is not right <a href="javascript:history.back();">Back</a>
 <?php elseif ($act == 'openfile'):
 
 	$filecontent = get_file(file_get_contents($os_path));
-	$filecontent =  ge_htmlspecialchars($filecontent);
+	$filecontent = ge_htmlspecialchars($filecontent);
 ?>
 <!doctype html>
 <html>
@@ -306,7 +305,7 @@ body {
 </body>
 </html>
 <?php elseif ($act == 'rename'):
-	$rename =  ge_basename($path);
+	$rename = ge_basename($path);
 ?>
 <html>
 <head>
