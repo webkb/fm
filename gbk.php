@@ -191,11 +191,13 @@ if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 			$file_img = '&#x1f4c1;';
 			$filesize = ' --- ';
 			$file_download = ' --- ';
+			$file_rename = "<a href=\"?path=$url_filepath&act=rename\">Rename</a>";
 			$file_delete = "<a href=\"?path=$url_path&rmdir=$url_filename\">Delete$delete</a>";
 		} elseif ($filetype == 'file') {
 			$file_act = 'openfile';
 			$file_img = '&#x1f4c4;';
 			$file_download = "<a href=\"?path=$url_filepath&act=download\">Download</a>";
+			$file_rename = "<a href=\"?path=$url_filepath&act=rename\">Rename</a>";
 			$file_delete = "<a href=\"?path=$url_path&delete=$url_filename\">Delete$delete</a>";
 		} elseif ($filetype == 'php_error')  {
 			$file_act = 'do_nothing';
@@ -203,10 +205,8 @@ if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 			$filesize = ' --- ';
 			$filemtime = ' --- ';
 			$file_download = " --- ";
+			$file_rename = " --- ";
 			$file_delete = " --- ";
-		$url_path = url_percent($path);	
-		$url_filepath = url_percent($filepath);
-		$url_filename = url_percent($filename);
 		}
 		echo "<tr class=\"$filetype\">
 		<td class=\"fileimg\">$file_img</td>
@@ -214,7 +214,7 @@ if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 		<td class=\"filemtime\">$filesize</td>
 		<td class=\"filemtime\">$filemtime</td>
 		<td class=\"fileact\">$file_download</td>
-		<td class=\"fileact\"><a href=\"?path=$url_filepath&act=rename\">Rename</a></td>
+		<td class=\"fileact\">$file_rename</td>
 		<td class=\"fileact\">$file_delete</td>
 		</tr>\r\n";
 	}
