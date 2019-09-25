@@ -37,35 +37,35 @@ function ge_basename ($path) {
 	$path_array = explode('/', $path);
 	return end($path_array);
 }
-function put_os ($string) {
-	$os_encoding = $_SESSION['os_encoding'];
+function real_path ($string) {
+	$path_encoding = $_SESSION['path_encoding'];
 	$charset = 'UTF-8';
-	if ($os_encoding != $charset) {
-		$string = mb_convert_encoding($string, $os_encoding , $charset);
+	if ($path_encoding != $charset) {
+		$string = mb_convert_encoding($string, $path_encoding , $charset);
 	}
 	return $string;
 }
-function get_os ($string) {
-	$os_encoding = $_SESSION['os_encoding'];
+function user_path ($string) {
+	$path_encoding = $_SESSION['path_encoding'];
 	$charset = 'UTF-8';
-	if ($os_encoding != $charset) {
-		$string = mb_convert_encoding($string, $charset, $os_encoding);
+	if ($path_encoding != $charset) {
+		$string = mb_convert_encoding($string, $charset, $path_encoding);
 	}
 	return $string;
 }
-function put_file ($string) {
-	$file_encoding = $_SESSION['file_encoding'];
+function real_text ($string) {
+	$text_encoding = $_SESSION['text_encoding'];
 	$charset = 'UTF-8';
-	if ($file_encoding != $charset) {
-		$string = mb_convert_encoding($string, $file_encoding , $charset);
+	if ($text_encoding != $charset) {
+		$string = mb_convert_encoding($string, $text_encoding , $charset);
 	}
 	return $string;
 }
-function get_file ($string) {
-	$file_encoding = $_SESSION['file_encoding'];
+function user_text ($string) {
+	$text_encoding = $_SESSION['text_encoding'];
 	$charset = 'UTF-8';
-	if ($file_encoding != $charset) {
-		$string = mb_convert_encoding($string, $charset, $file_encoding);
+	if ($text_encoding != $charset) {
+		$string = mb_convert_encoding($string, $charset, $text_encoding);
 	}
 	return $string;
 }
@@ -86,57 +86,53 @@ function url_add_query($key, $value, $urlLinkChar = '=', $firstUrlLinkChar = '?'
 
 if (checkPW()) {
 
-	if (isset($_GET['os_encoding'])) {
-		$os_encoding = $_SESSION['os_encoding'] = $_GET['os_encoding'];
-	} elseif (isset($_SESSION['os_encoding'])) {
-		$os_encoding = $_SESSION['os_encoding'];
+	if (isset($_GET['path_encoding'])) {
+		$path_encoding = $_SESSION['path_encoding'] = $_GET['path_encoding'];
+	} elseif (isset($_SESSION['path_encoding'])) {
+		$path_encoding = $_SESSION['path_encoding'];
 	} else {
-		$os_encoding = 'GBK';
+		$path_encoding = $_SESSION['path_encoding'] = 'GBK';
 	}
-	if (isset($_GET['file_encoding'])) {
-		$file_encoding = $_SESSION['file_encoding'] = $_GET['file_encoding'];
-	} elseif (isset($_SESSION['file_encoding'])) {
-		$file_encoding = $_SESSION['file_encoding'];
+	if (isset($_GET['text_encoding'])) {
+		$text_encoding = $_SESSION['text_encoding'] = $_GET['text_encoding'];
+	} elseif (isset($_SESSION['text_encoding'])) {
+		$text_encoding = $_SESSION['text_encoding'];
 	} else {
-		$file_encoding = 'UTF-8';
+		$text_encoding = $_SESSION['text_encoding'] = 'UTF-8';
 	}
 
-	$path = isset($_GET['path']) ? $_GET['path'] : FMROOT;
-	$os_path = put_os($path);
+	$user_path = isset($_GET['path']) ? $_GET['path'] : FMROOT;
+	$path = real_path($user_path);
 
-	if (stripos($os_path, FMROOT) === false && true) {
+	if (stripos($path, FMROOT) === false && true) {
 		echo 'The dir is not accessible <a href="javascript:history.back();">Back</a>';
 		exit;
 	}
 
-	$mkdir = isset($_POST['mkdir']) ? $_POST['mkdir'] : '';
-	if ($mkdir != '') {
-		mkdir($os_path . '/' . put_os($mkdir));
+	if (isset($_POST['mkdir']) && $_POST['mkdir'] != '') {
+		mkdir($path . '/' . real_path($_POST['mkdir']));
 	}
 
-	$file = isset($_FILES["file"]) ? $_FILES["file"] : '';
-	if ($file != '' && $file['error'] == 0) {
-		move_uploaded_file($file['tmp_name'], $os_path . '/' . put_os($file['name']));
+	if (isset($_FILES['file']) && $_FILES['file']['error'] == 0) {
+		$file = $_FILES["file"];
+		move_uploaded_file($file['tmp_name'], $path . '/' . real_path($file['name']));
 	}
 
-	$filecontent = isset($_POST['filecontent']) ? $_POST['filecontent'] : '';
-	if ($filecontent != '') {
-		file_put_contents($path, put_file($filecontent));
+	if (isset($_POST['filecontent']) && $_POST['filecontent'] != '') {
+		file_put_contents($path, real_text($_POST['filecontent']));
 	}
 
 	$act = isset($_GET['act']) ? $_GET['act'] : 'opendir';
 	if ($act == 'download') {
-		header('Content-Type: ' . mime_content_type($os_path));
-		header('Content-Length: '. filesize($os_path));
-		header('Content-Disposition: attachment; filename=' . ge_basename($path));
-		readfile($os_path);
+		header('Content-Type: ' . mime_content_type($path));
+		header('Content-Length: '. filesize($path));
+		header('Content-Disposition: attachment; filename=' . ge_basename($user_path));
+		readfile($path);
 		exit;
 	}
 
-	$rename = isset($_POST['rename']) ? $_POST['rename'] : '';
-	if ($act == 'rename' && $rename) {
-		$repath = dirname($os_path) . '/' . put_os($rename);
-		rename($os_path, $repath);
+	if (isset($_POST['rename']) && $_POST['rename'] != '') {
+		rename($path, dirname($path) . '/' . real_path($_POST['rename']));
 	}
 }
 ?>
@@ -155,7 +151,7 @@ if (checkPW()) {
 </body>
 </html>
 <?php elseif ($act == 'opendir'): ?>
-<?php if (is_dir($os_path) && $dh = opendir($os_path)): ?>
+<?php if (is_dir($path) && $dh = opendir($path)): ?>
 <!doctype html>
 <html>
 <head>
@@ -193,12 +189,16 @@ body {
 .filelist .fileact{
 	width:100px;
 }
+.filelist .filedelete{
+	width:150px;
+}
 </style>
 </head>
 <body>
-<a href="?path=<?php echo url_percent(dirname($path)); ?>">Parent</a>
-<a<?php if ($os_encoding=='GBK'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('os_encoding', 'GBK'); ?>">GBK</a>
-<a<?php if ($os_encoding=='UTF-8'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('os_encoding', 'UTF-8'); ?>">UTF-8</a>
+<a href="?path=<?php echo url_percent(dirname($user_path)); ?>">Parent</a>
+Path encoding:
+<a<?php if ($path_encoding=='UTF-8'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('path_encoding', 'UTF-8'); ?>">UTF-8</a>
+<a<?php if ($path_encoding=='GBK'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('path_encoding', 'GBK'); ?>">GBK</a>
 <form method="post" enctype="multipart/form-data">
 	<input name="mkdir" placeholder="mkdir" /><br />
 	<input name="file" type="file" /><br />
@@ -216,7 +216,7 @@ body {
 	</tr>
 <?php
 	while (($filename = readdir($dh)) !== false) {
-		$filepath = $os_path . '/' . $filename;
+		$filepath = $path . '/' . $filename;
 
 		if ($filename =='.' || $filename =='..' || ! file_exists($filepath)) {
 			continue;
@@ -227,29 +227,30 @@ body {
 		$filemtime = date('Y-m-d H:i:s', filemtime($filepath));
 
 $delete =  '';
-if (isset($_GET['delete']) && put_os($_GET['delete']) == $filename) {
+if (isset($_GET['delete']) && real_path($_GET['delete']) == $filename) {
 	if (unlink($filepath)) {
 		$delete =  ' (Delete success) ';
 	} else {
 		$delete =  ' (Delete false) ';
 	}
-} elseif (isset($_GET['rmdir']) && put_os($_GET['rmdir']) == $filename) {
+} elseif (isset($_GET['rmdir']) && real_path($_GET['rmdir']) == $filename) {
 	if (rmdir($filepath)) {
 		$delete =  ' (Delete success) ';
 	} else {
 		$delete =  ' (Delete false) ';
 	}
 }
-		$filename = get_os($filename);	
-		$url_path = url_percent(get_os($os_path));	
-		$url_filepath = url_percent(get_os($filepath));	
-		$url_filename = url_percent($filename);	
+		$user_filename = user_path($filename);
+		$url_filename = url_percent($user_filename);	
+		$url_path = url_percent($user_path);
+		$url_filepath = url_percent(user_path($filepath));	
+
 		if ($filetype =='dir') {
 			$file_act = 'opendir';
 			$file_img = '&#x1f4c1;';
 			$filesize = ' --- ';
 			$file_download = ' --- ';
-			$file_delete = "<a href=\"?path=$url_path&rmdir=$url_filename\">Delete$delete</a>";
+			$file_delete = "<a href=\"?path=$url_path&delete=$url_filename\">Delete$delete</a>";
 		} else {
 			$file_act = 'openfile';
 			$file_img = '&#x1f4c4;';
@@ -258,12 +259,12 @@ if (isset($_GET['delete']) && put_os($_GET['delete']) == $filename) {
 		}
 		echo "<tr class=\"$filetype\">
 		<td class=\"fileimg\">$file_img</td>
-		<td class=\"filename\"><a href=\"?path=$url_filepath&act=$file_act\">$filename</a></td>
+		<td class=\"filename\"><a href=\"?path=$url_filepath&act=$file_act\">$user_filename</a></td>
 		<td class=\"filemtime\">$filesize</td>
 		<td class=\"filemtime\">$filemtime</td>
 		<td class=\"fileact\">$file_download</td>
 		<td class=\"fileact\"><a href=\"?path=$url_filepath&act=rename\">Rename</a></td>
-		<td class=\"fileact\">$file_delete</td>
+		<td class=\"filedelete\">$file_delete</td>
 		</tr>\r\n";
 	}
 	closedir($dh);
@@ -275,8 +276,7 @@ if (isset($_GET['delete']) && put_os($_GET['delete']) == $filename) {
 The dir is not right <a href="javascript:history.back();">Back</a>
 <?php endif; ?>
 <?php elseif ($act == 'openfile'):
-
-	$filecontent = get_file(file_get_contents($os_path));
+	$filecontent = user_text(file_get_contents($path));
 	$filecontent = ge_htmlspecialchars($filecontent);
 ?>
 <!doctype html>
@@ -295,9 +295,10 @@ body {
 </style>
 </head>
 <body>
-<a href="?path=<?php echo url_percent(dirname($path)); ?>">Parent</a>
-<a<?php if ($file_encoding=='GBK'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('file_encoding', 'GBK'); ?>">GBK</a>
-<a<?php if ($file_encoding=='UTF-8'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('file_encoding', 'UTF-8'); ?>">UTF-8</a>
+<a href="?path=<?php echo url_percent(dirname($user_path)); ?>">Parent</a>
+Text encoding:
+<a<?php if ($text_encoding=='UTF-8'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('text_encoding', 'UTF-8'); ?>">UTF-8</a>
+<a<?php if ($text_encoding=='GBK'): ?> class="hover"<?php endif; ?> href="<?php echo url_add_query('text_encoding', 'GBK'); ?>">GBK</a>
 <form method="post">
 	<textarea name="filecontent" style="width:100%;height:400px;"><?php echo $filecontent; ?></textarea><br />
 	<input type="submit" />
@@ -305,7 +306,7 @@ body {
 </body>
 </html>
 <?php elseif ($act == 'rename'):
-	$rename = ge_basename($path);
+	$rename = ge_basename($user_path);
 ?>
 <html>
 <head>
@@ -313,7 +314,7 @@ body {
 <meta charset="utf-8" />
 </head>
 <body>
-<a href="?path=<?php echo url_percent(dirname($path)); ?>">Parent</a>
+<a href="?path=<?php echo url_percent(dirname($user_path)); ?>">Parent</a>
 <form method="post">
 	<input name="rename" placeholder="rename" value="<?php echo $rename; ?>" /><br />
 	<input type="submit" />
