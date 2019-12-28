@@ -76,10 +76,7 @@ if (checkPW()) {
 	if ($act == 'rename' && $rename) {
 		$repath = dirname($path) . '/' . $rename;
 		rename($path, $repath);
-	}
-	if ($act == 'do_nothing') {
-		echo 'php error <a href="javascript:history.back();">Back</a>';
-		exit;
+		$path = $repath;
 	}
 }
 header("Content-type: text/html; charset=GB2312");
@@ -164,11 +161,16 @@ body {
 		if ($filename =='.' || $filename =='..') {
 			continue;
 		}
-		if (file_exists($filepath)) {
 
-		$filetype = filetype($filepath);
-		$filesize = filesize($filepath);
-		$filemtime = date('Y-m-d H:i:s', filemtime($filepath));
+		if (file_exists($filepath)) {
+			$filetype = filetype($filepath);
+			$filesize = filesize($filepath);
+			$filemtime = date('Y-m-d H:i:s', filemtime($filepath));
+		} else {
+			$filetype = filetype($filepath);
+			$filesize = mb_strlen(file_get_contents($filepath));
+			$filemtime = 'php error';
+		}
 
 $delete =  '';
 if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
@@ -188,9 +190,7 @@ if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 		$url_path = url_percent($path);	
 		$url_filepath = url_percent($filepath);
 		$url_filename = url_percent($filename);
-		} else {
-			$filetype = 'php_error';
-		}
+
 		if ($filetype == 'dir') {
 			$file_act = 'opendir';
 			$file_img = '&#x1f4c1;';
@@ -204,14 +204,6 @@ if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 			$file_download = "<a href=\"?path=$url_filepath&act=download\">Download</a>";
 			$file_rename = "<a href=\"?path=$url_filepath&act=rename\">Rename</a>";
 			$file_delete = "<a href=\"?path=$url_path&delete=$url_filename\">Delete$delete</a>";
-		} elseif ($filetype == 'php_error')  {
-			$file_act = 'do_nothing';
-			$file_img = '&#x1f4d2;';
-			$filesize = ' --- ';
-			$filemtime = ' --- ';
-			$file_download = " --- ";
-			$file_rename = " --- ";
-			$file_delete = " --- ";
 		}
 		echo "<tr class=\"$filetype\">
 		<td class=\"fileimg\">$file_img</td>
@@ -271,7 +263,7 @@ body {
 </html>
 <?php elseif ($act == 'rename'):
 //ÎÄµµÖØÃüÃû
-	$rename =  ge_basename($path);
+	$name =  ge_basename($path);
 ?>
 <html>
 <head>
@@ -286,7 +278,7 @@ body {
 <body>
 <a href="?path=<?php echo url_percent(dirname($path)); ?>">Parent</a>
 <form method="post">
-	<input name="rename" placeholder="rename" value="<?php echo $rename; ?>" /><br />
+	<input name="rename" placeholder="rename" value="<?php echo $name; ?>" /><br />
 	<input type="submit" />
 </form>
 </body>

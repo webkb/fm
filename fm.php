@@ -133,6 +133,7 @@ if (checkPW()) {
 
 	if (isset($_POST['rename']) && $_POST['rename'] != '') {
 		rename($path, dirname($path) . '/' . real_path($_POST['rename']));
+		$user_path = dirname($user_path) . '/' . $_POST['rename'];
 	}
 }
 ?>
@@ -223,13 +224,19 @@ Path encoding:
 	while (($filename = readdir($dh)) !== false) {
 		$filepath = $path . '/' . $filename;
 
-		if ($filename =='.' || $filename =='..' || ! file_exists($filepath)) {
+		if ($filename =='.' || $filename =='..') {
 			continue;
 		}
 
-		$filetype = filetype($filepath);
-		$filesize = filesize($filepath);
-		$filemtime = date('Y-m-d H:i:s', filemtime($filepath));
+		if (file_exists($filepath)) {
+			$filetype = filetype($filepath);
+			$filesize = filesize($filepath);
+			$filemtime = date('Y-m-d H:i:s', filemtime($filepath));
+		} else {
+			$filetype = filetype($filepath);
+			$filesize = mb_strlen(file_get_contents($filepath));
+			$filemtime = 'php error';
+		}
 
 $delete =  '';
 if (isset($_GET['delete']) && real_path($_GET['delete']) == $filename) {
@@ -256,7 +263,7 @@ if (isset($_GET['delete']) && real_path($_GET['delete']) == $filename) {
 			$filesize = ' --- ';
 			$file_download = ' --- ';
 			$file_delete = "<a href=\"?path=$url_path&delete=$url_filename\">Delete$delete</a>";
-		} else {
+		} elseif ($filetype == 'file') {
 			$file_act = 'openfile';
 			$file_img = '&#x1f4c4;';
 			$file_download = "<a href=\"?path=$url_filepath&act=download\">Download</a>";
@@ -325,7 +332,7 @@ Text encoding:
 </body>
 </html>
 <?php elseif ($act == 'rename'):
-	$rename = ge_basename($user_path);
+	$name = ge_basename($user_path);
 ?>
 <html>
 <head>
@@ -340,7 +347,7 @@ body {
 <body>
 <a href="?path=<?php echo url_percent(dirname($user_path)); ?>">Parent</a>
 <form method="post">
-	<input name="rename" placeholder="rename" value="<?php echo $rename; ?>" /><br />
+	<input name="rename" placeholder="rename" value="<?php echo $name; ?>" /><br />
 	<input type="submit" />
 </form>
 </body>
