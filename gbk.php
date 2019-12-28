@@ -90,6 +90,11 @@ header("Content-type: text/html; charset=GB2312");
 <head>
 <title></title>
 <meta charset="GB2312" />
+<style>
+body {
+	font-size:12px;
+}
+</style>
 </head>
 <body>
 <form method="post">
@@ -224,7 +229,21 @@ if (isset($_GET['delete']) && $_GET['delete'] == $filename) {
 </body>
 </html>
 <?php else: ?>
+<!doctype html>
+<html>
+<head>
+<title></title>
+<meta charset="GB2312" />
+<style>
+body {
+	font-size:12px;
+}
+</style>
+</head>
+<body>
 The dir is not right <a href="javascript:history.back();">Back</a>
+</body>
+</html>
 <?php endif; ?>
 <?php elseif ($act == 'openfile'):
 //文档编辑
@@ -258,6 +277,11 @@ body {
 <head>
 <title></title>
 <meta charset="GB2312" />
+<style>
+body {
+	font-size:12px;
+}
+</style>
 </head>
 <body>
 <a href="?path=<?php echo url_percent(dirname($path)); ?>">Parent</a>

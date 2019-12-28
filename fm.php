@@ -142,6 +142,11 @@ if (checkPW()) {
 <head>
 <title></title>
 <meta charset="utf-8" />
+<style>
+body {
+	font-size:12px;
+}
+</style>
 </head>
 <body>
 <form method="post">
@@ -273,7 +278,21 @@ if (isset($_GET['delete']) && real_path($_GET['delete']) == $filename) {
 </body>
 </html>
 <?php else: ?>
+<!doctype html>
+<html>
+<head>
+<title></title>
+<meta charset="utf-8" />
+<style>
+body {
+	font-size:12px;
+}
+</style>
+</head>
+<body>
 The dir is not right <a href="javascript:history.back();">Back</a>
+</body>
+</html>
 <?php endif; ?>
 <?php elseif ($act == 'openfile'):
 	$filecontent = user_text(file_get_contents($path));
@@ -312,6 +331,11 @@ Text encoding:
 <head>
 <title></title>
 <meta charset="utf-8" />
+<style>
+body {
+	font-size:12px;
+}
+</style>
 </head>
 <body>
 <a href="?path=<?php echo url_percent(dirname($user_path)); ?>">Parent</a>
